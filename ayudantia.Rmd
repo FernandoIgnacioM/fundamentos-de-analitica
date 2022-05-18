@@ -1,0 +1,144 @@
+---
+title: "ayudantia"
+author: "Fundamentos de analítica"
+date: '2022-05-06'
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+options(scipen = 999, digits = 2) 
+```
+
+
+```{r cargar librerias}
+library(readxl)
+library(tidyverse)
+
+
+```
+
+
+```{r configuraciones de los graficos}
+
+theme_set(theme_minimal() + theme(plot.title = element_text(hjust = 0.5)))
+
+```
+
+
+```{r carga de datos}
+preciocasas <- read_excel("C:/Users/56963/Downloads/archive/preciocasas.xlsx", 
+    col_types = c("skip", "numeric", "numeric", 
+        "numeric", "numeric", "numeric", 
+        "skip", "skip", "skip"))
+```
+
+
+
+# introduccion
+
+esta es una introduccion en R marckdown
+
+\newpage 
+
+con **\\newpage** hace salto de hoja \n
+
+
+con  **\\n** hace salto de linea
+
+
+
+# tabla casa
+
+
+```{r, echo=TRUE}
+head(preciocasas, 5)
+```
+
+
+
+## estadistica univariante
+
+en esta seccion se hará un analisis exploratorio
+
+```{r media uf}
+media <- mean(preciocasas$UF)
+
+```
+
+el promedio de las casas es `r media`
+
+
+### distribucion de la variable UF
+
+```{r grafico de UF}
+
+preciocasas %>% ggplot(aes(x = UF)) + geom_histogram(fill = "white", color = "black", binwidth = 2000) + labs(title = "Distribución de la variable UF", y = "Recuento")
+
+
+```
+
+
+### grafico densidad
+
+```{r}
+preciocasas %>% ggplot(aes(x = UF)) + geom_density(size = 1, fill = "red", alpha = 0.3) + labs(title = "Distribución de la variable UF", y = "Frecuencia")
+```
+
+### otro grafico
+
+```{r}
+preciocasas %>% ggplot(aes(x = UF)) + geom_histogram(fill = "white", color = "black", binwidth = 2000) + geom_density(aes(y = ..count.. * 2000), color = "red", fill = "red", alpha = .2) +
+  geom_vline(xintercept = mean(preciocasas$UF), color = "red", size = 2, linetype = "dashed") + 
+  geom_vline(xintercept = median(preciocasas$UF), color = "blue", size = 2, linetype = "dashed") +
+  geom_vline(xintercept = quantile(preciocasas$UF, .9), color = "yellow", size = 2)
+```
+
+
+
+### precio de las casas en funcion de la superficie construida
+
+
+```{r}
+preciocasas %>% 
+  ggplot(aes(x = `Superficie Casa`, y = UF)) + geom_point() + geom_smooth(method = lm, se = FALSE, color = "red")
+```
+
+
+## transformar superficie terreno a cualitativa
+
+
+```{r}
+
+preciocasas$TamanioTerreno = cut(preciocasas$`Superficie Terreno`, breaks = c(0, 2000, 5000, Inf), labels = c("pequeño", "mediano", "grande"))
+```
+
+
+
+## boxplot de la nueva variables
+
+```{r}
+preciocasas %>% 
+  ggplot(aes(x = TamanioTerreno, y = UF)) + geom_boxplot()
+```
+
+
+### agrupar por tamaño terreno  y sacar la media de los precios
+
+```{r}
+preciocasas %>% group_by(TamanioTerreno) %>% summarise(mediaUF = mean(UF)) %>% 
+  ggplot(aes(x = TamanioTerreno, y = mediaUF)) + geom_col(fill = "blue", width = .7) + 
+  geom_text(aes(label = round(mediaUF, 1)), vjust = -1)
+
+```
+
+
+
+
+
+
+
+
+
+
+
